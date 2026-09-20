@@ -1,10 +1,16 @@
 import io
 import json
+import tarfile
 from pathlib import Path
 
 import pytest
 
-from kratos_smolvla.train import Settings, forward_training_output, training_command
+from kratos_smolvla.train import (
+    Settings,
+    forward_training_output,
+    package_checkpoint,
+    training_command,
+)
 
 
 def test_settings_are_bounded(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -75,3 +81,21 @@ def test_lerobot_progress_becomes_bounded_kratos_records(
             "step": 100,
         },
     ]
+
+
+def test_checkpoint_contains_run_summary_without_a_second_output(tmp_path: Path) -> None:
+    training_dir = tmp_path / "train"
+    checkpoint_dir = training_dir / "checkpoints" / "last"
+    checkpoint_dir.mkdir(parents=True)
+    (checkpoint_dir / "model.safetensors").write_bytes(b"weights")
+    destination = tmp_path / "smolvla-checkpoint.tar"
+    summary = {"steps": 2000, "checkpoint": destination.name}
+
+    package_checkpoint(training_dir, destination, summary)
+
+    with tarfile.open(destination) as archive:
+        assert archive.extractfile("run-summary.json").read() == (
+            json.dumps(summary, indent=2) + "\n"
+        ).encode("utf-8")
+        assert archive.extractfile("checkpoint/model.safetensors").read() == b"weights"
+    assert not (tmp_path / "run-summary.json").exists()
