@@ -40,6 +40,8 @@ RUN pip install --no-cache-dir --no-deps . \
     && chown trainer:trainer /kratos/outputs
 
 ENV HF_HUB_OFFLINE=1 \
+    HF_DATASETS_CACHE=/tmp/huggingface/datasets \
+    XDG_CACHE_HOME=/tmp/cache \
     TRANSFORMERS_OFFLINE=1 \
     TOKENIZERS_PARALLELISM=false \
     KRATOS_OUTPUT_DIR=/kratos/outputs
