@@ -1,8 +1,10 @@
-FROM pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime@sha256:c16f4c749e2d9e96878875cdf6cc45cddda1d1a36fddd371dd6f2360f1b6e2a2 AS assets
+FROM python:3.12.11-slim-bookworm@sha256:c00fc7b44d844b6da22861ec24af43968a5200eac4ec607b4725d585165d6b49 AS assets
 
 ARG LEROBOT_REVISION=5aa74557f84c54d4b458f8b9643c5aa2982acfed
 ARG MODEL_REVISION=d9f33c94a60fb382c90dea2164c96845bd955e28
 ARG DATASET_REVISION=728583b5eaf9e739a7f119e2def466fa1d552402
+ARG TORCH_VERSION=2.11.0
+ARG TORCHVISION_VERSION=0.26.0
 
 ENV DEBIAN_FRONTEND=noninteractive \
     HF_HOME=/opt/huggingface \
@@ -15,6 +17,10 @@ RUN apt-get update \
 
 RUN git clone https://github.com/huggingface/lerobot.git /opt/lerobot \
     && git -C /opt/lerobot checkout --detach "$LEROBOT_REVISION" \
+    && pip install --no-cache-dir \
+        --index-url https://download.pytorch.org/whl/cu128 \
+        "torch==$TORCH_VERSION" \
+        "torchvision==$TORCHVISION_VERSION" \
     && pip install --no-cache-dir "/opt/lerobot[smolvla,training]"
 
 RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('lerobot/smolvla_base', revision='$MODEL_REVISION')" \
@@ -35,4 +41,3 @@ ENV HF_HUB_OFFLINE=1 \
     KRATOS_OUTPUT_DIR=/kratos/outputs
 USER 10001:10001
 ENTRYPOINT ["kratos-smolvla"]
-
