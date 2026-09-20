@@ -67,6 +67,11 @@ def training_command(settings: Settings, training_dir: Path) -> list[str]:
         "--job_name=kratos-smolvla-pickplace",
         f"--steps={settings.steps}",
         f"--batch_size={settings.batch_size}",
+        # Kratos deliberately gives workloads a small, bounded /dev/shm. A
+        # single-process loader avoids PyTorch's shared-memory transport while
+        # leaving GPU training unchanged.
+        "--num_workers=0",
+        "--persistent_workers=false",
         "--wandb.enable=false",
         "--save_freq=500",
         "--log_freq=10",
