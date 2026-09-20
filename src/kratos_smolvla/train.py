@@ -13,6 +13,14 @@ MODEL_ID = "lerobot/smolvla_base"
 MODEL_REVISION = "d9f33c94a60fb382c90dea2164c96845bd955e28"
 DATASET_ID = "lerobot/svla_so100_pickplace"
 DATASET_REVISION = "728583b5eaf9e739a7f119e2def466fa1d552402"
+MODEL_SNAPSHOT = "/opt/huggingface/hub/models--lerobot--smolvla_base/snapshots/" + MODEL_REVISION
+DATASET_SNAPSHOT = (
+    "/opt/huggingface/hub/datasets--lerobot--svla_so100_pickplace/snapshots/" + DATASET_REVISION
+)
+CAMERA_RENAME_MAP = {
+    "observation.images.top": "observation.images.camera1",
+    "observation.images.wrist": "observation.images.camera2",
+}
 LOSS_PATTERN = re.compile(r"(?:^|\s)loss[:=]\s*(?P<loss>[0-9]+(?:\.[0-9]+)?)", re.IGNORECASE)
 STEP_PATTERN = re.compile(r"(?:^|\s)step[:=]\s*(?P<step>[0-9]+)", re.IGNORECASE)
 
@@ -48,10 +56,13 @@ def emit(record: str, **fields: object) -> None:
 def training_command(settings: Settings, training_dir: Path) -> list[str]:
     return [
         "lerobot-train",
-        f"--policy.path={MODEL_ID}",
-        "--policy.dtype=bfloat16",
+        f"--policy.path={MODEL_SNAPSHOT}",
         f"--policy.device={settings.device}",
+        "--policy.push_to_hub=false",
         f"--dataset.repo_id={DATASET_ID}",
+        f"--dataset.root={DATASET_SNAPSHOT}",
+        f"--dataset.revision={DATASET_REVISION}",
+        f"--rename_map={json.dumps(CAMERA_RENAME_MAP, separators=(',', ':'))}",
         f"--output_dir={training_dir}",
         "--job_name=kratos-smolvla-pickplace",
         f"--steps={settings.steps}",

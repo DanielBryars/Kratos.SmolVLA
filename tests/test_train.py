@@ -16,8 +16,24 @@ def test_settings_are_bounded(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_command_is_offline_friendly_and_disables_wandb() -> None:
     settings = Settings(Path("/kratos/outputs"), steps=2000, batch_size=8, device="cuda")
     command = training_command(settings, Path("/kratos/outputs/train"))
-    assert "--policy.path=lerobot/smolvla_base" in command
+    assert any(
+        argument.startswith("--policy.path=/opt/huggingface/hub/models--lerobot--smolvla_base/")
+        for argument in command
+    )
     assert "--dataset.repo_id=lerobot/svla_so100_pickplace" in command
+    assert any(
+        argument.startswith(
+            "--dataset.root=/opt/huggingface/hub/datasets--lerobot--svla_so100_pickplace/"
+        )
+        for argument in command
+    )
+    assert "--dataset.revision=728583b5eaf9e739a7f119e2def466fa1d552402" in command
+    assert "--policy.push_to_hub=false" in command
+    assert (
+        '--rename_map={"observation.images.top":"observation.images.camera1",'
+        '"observation.images.wrist":"observation.images.camera2"}' in command
+    )
+    assert not any(argument.startswith("--policy.dtype=") for argument in command)
     assert "--wandb.enable=false" in command
     assert "--policy.device=cuda" in command
 

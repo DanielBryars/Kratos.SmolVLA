@@ -9,11 +9,15 @@ policy on the SO-100 pick-and-place demonstrations.
 |---|---|---|
 | `lerobot/smolvla_base` | `d9f33c94a60fb382c90dea2164c96845bd955e28` | Apache-2.0 |
 | `lerobot/svla_so100_pickplace` | `728583b5eaf9e739a7f119e2def466fa1d552402` | Apache-2.0 |
+| `HuggingFaceTB/SmolVLM2-500M-Video-Instruct` | `7b375e1b73b11138ff12fe22c8f2822d8fe03467` | Apache-2.0 |
 | `huggingface/lerobot` | `5aa74557f84c54d4b458f8b9643c5aa2982acfed` | Apache-2.0 |
 
-The image build downloads those exact revisions into the Hugging Face cache. Runtime sets
-`HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`, so the scheduled container needs no network or
-Hugging Face token.
+The image build downloads those exact revisions into the Hugging Face cache. The training command
+uses the model and dataset's exact local snapshots, maps the dataset's two camera names onto the
+base policy's camera inputs, and disables model publication. SmolVLM2 is also cached with a local
+`main` reference because LeRobot's saved tokenizer processor resolves that symbolic dependency at
+runtime. Runtime sets `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`, so the scheduled container
+needs no network or Hugging Face token.
 
 ## Build
 
@@ -60,7 +64,7 @@ Human-oriented LeRobot output goes to stderr. Successful runs write:
 
 | Path | Role | Suggested limit |
 |---|---|---:|
-| `smolvla-checkpoint.tar` | `model` | 8 GiB |
+| `smolvla-checkpoint.tar` | `model` | 5 GiB |
 | `run-summary.json` | `metadata` | 64 KiB |
 
 Register both paths as mandatory Kratos outputs when scheduling the job. Kratos computes and
