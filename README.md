@@ -26,6 +26,10 @@ docker build -t kratos-smolvla:dev .
 Do not pass a Hugging Face token: every pinned input is public. No credential is written into the
 image, build history or repository.
 
+The manual **Publish workload image** GitHub Actions workflow builds the complete pinned image and
+publishes it to `ghcr.io/danielbryars/kratos-smolvla`. Its job summary records the immutable digest
+that SHALL be submitted to Kratos; mutable tags are only discovery aids.
+
 ## Test locally on one GPU
 
 Start with a short integration run before spending several hours on the full recipe:
@@ -69,4 +73,3 @@ one worker to an attempt and starts the container with networking disabled, so a
 not enabled by changing this image. It requires Kratos gang scheduling, rank assignment, a scoped
 peer network, coordinated leases and all-rank failure handling. The one-GPU run is the acceptance
 baseline for that work.
-
