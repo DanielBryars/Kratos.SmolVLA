@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import json
 import os
 import re
@@ -91,11 +92,16 @@ def forward_training_output(stream: TextIO, total_steps: int) -> None:
                 emit("metric", name="train.loss", value=float(loss_match.group("loss")), step=step)
 
 
-def package_checkpoint(training_dir: Path, destination: Path) -> None:
+def package_checkpoint(training_dir: Path, destination: Path, summary: dict[str, object]) -> None:
     checkpoints = sorted(training_dir.glob("checkpoints/*"))
     source = checkpoints[-1] if checkpoints else training_dir
     with tarfile.open(destination, "w") as archive:
         archive.add(source, arcname="checkpoint")
+        summary_bytes = (json.dumps(summary, indent=2) + "\n").encode("utf-8")
+        summary_info = tarfile.TarInfo("run-summary.json")
+        summary_info.size = len(summary_bytes)
+        summary_info.mode = 0o644
+        archive.addfile(summary_info, io.BytesIO(summary_bytes))
 
 
 def run(settings: Settings) -> int:
@@ -121,18 +127,15 @@ def run(settings: Settings) -> int:
     if exit_code != 0:
         return exit_code
 
-    checkpoint = settings.output_root / "smolvla-checkpoint.tar"
-    package_checkpoint(training_dir, checkpoint)
     summary = {
         "model": {"id": MODEL_ID, "revision": MODEL_REVISION},
         "dataset": {"id": DATASET_ID, "revision": DATASET_REVISION},
         "steps": settings.steps,
         "batch_size": settings.batch_size,
-        "checkpoint": checkpoint.name,
+        "checkpoint": "smolvla-checkpoint.tar",
     }
-    (settings.output_root / "run-summary.json").write_text(
-        json.dumps(summary, indent=2) + "\n", encoding="utf-8"
-    )
+    checkpoint = settings.output_root / summary["checkpoint"]
+    package_checkpoint(training_dir, checkpoint, summary)
     emit("result", result=summary)
     return 0
 

@@ -60,15 +60,15 @@ The workload emits newline-delimited Kratos records on stdout:
 - bounded progress and `train.loss` metrics parsed from LeRobot's output; and
 - one final structured result.
 
-Human-oriented LeRobot output goes to stderr. Successful runs write:
+Human-oriented LeRobot output goes to stderr. Successful runs write one durable output:
 
 | Path | Role | Suggested limit |
 |---|---|---:|
 | `smolvla-checkpoint.tar` | `model` | 5 GiB |
-| `run-summary.json` | `metadata` | 64 KiB |
 
-Register both paths as mandatory Kratos outputs when scheduling the job. Kratos computes and
-verifies their hashes after the container exits.
+Register that path as a mandatory Kratos output when scheduling the job. The archive contains the
+selected checkpoint under `checkpoint/` and the pinned run metadata as `run-summary.json`. Kratos
+computes and verifies the archive's hashes after the container exits.
 
 ## Multi-machine training
 
