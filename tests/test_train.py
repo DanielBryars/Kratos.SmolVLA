@@ -36,6 +36,8 @@ def test_command_is_offline_friendly_and_disables_wandb() -> None:
     assert not any(argument.startswith("--policy.dtype=") for argument in command)
     assert "--wandb.enable=false" in command
     assert "--policy.device=cuda" in command
+    assert "--num_workers=0" in command
+    assert "--persistent_workers=false" in command
 
 
 def test_lerobot_progress_becomes_bounded_kratos_records(
