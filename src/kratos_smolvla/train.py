@@ -94,7 +94,9 @@ def forward_training_output(stream: TextIO, total_steps: int) -> None:
 
 
 def package_checkpoint(training_dir: Path, destination: Path, summary: dict[str, object]) -> None:
-    checkpoints = sorted(training_dir.glob("checkpoints/*"))
+    checkpoints = sorted(
+        path for path in training_dir.glob("checkpoints/*") if path.name.isdigit() and path.is_dir()
+    )
     source = checkpoints[-1] if checkpoints else training_dir
     with tarfile.open(destination, "w") as archive:
         archive.add(source, arcname="checkpoint")
