@@ -85,9 +85,10 @@ def test_lerobot_progress_becomes_bounded_kratos_records(
 
 def test_checkpoint_contains_run_summary_without_a_second_output(tmp_path: Path) -> None:
     training_dir = tmp_path / "train"
-    checkpoint_dir = training_dir / "checkpoints" / "last"
+    checkpoint_dir = training_dir / "checkpoints" / "000010"
     checkpoint_dir.mkdir(parents=True)
     (checkpoint_dir / "model.safetensors").write_bytes(b"weights")
+    (training_dir / "checkpoints" / "last").mkdir()
     destination = tmp_path / "smolvla-checkpoint.tar"
     summary = {"steps": 2000, "checkpoint": destination.name}
 
