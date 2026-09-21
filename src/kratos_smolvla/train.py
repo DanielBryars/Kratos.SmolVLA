@@ -4,6 +4,7 @@ import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import tarfile
 from dataclasses import dataclass
@@ -102,11 +103,12 @@ def package_checkpoint(training_dir: Path, destination: Path, summary: dict[str,
         summary_info.size = len(summary_bytes)
         summary_info.mode = 0o644
         archive.addfile(summary_info, io.BytesIO(summary_bytes))
+    shutil.rmtree(training_dir)
 
 
 def run(settings: Settings) -> int:
     settings.output_root.mkdir(parents=True, exist_ok=True)
-    training_dir = settings.output_root / "train"
+    training_dir = settings.output_root / ".work"
     emit("param", name="model.id", value=MODEL_ID)
     emit("param", name="model.revision", value=MODEL_REVISION)
     emit("param", name="dataset.id", value=DATASET_ID)
