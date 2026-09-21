@@ -68,7 +68,8 @@ Human-oriented LeRobot output goes to stderr. Successful runs write one durable 
 
 Register that path as a mandatory Kratos output when scheduling the job. The archive contains the
 selected checkpoint under `checkpoint/` and the pinned run metadata as `run-summary.json`. Kratos
-computes and verifies the archive's hashes after the container exits.
+computes and verifies the archive's hashes after the container exits. Intermediate LeRobot files
+are removed after packaging, so Kratos sees exactly the one declared durable output.
 
 ## Multi-machine training
 

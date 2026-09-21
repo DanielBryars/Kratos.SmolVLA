@@ -98,4 +98,5 @@ def test_checkpoint_contains_run_summary_without_a_second_output(tmp_path: Path)
             json.dumps(summary, indent=2) + "\n"
         ).encode("utf-8")
         assert archive.extractfile("checkpoint/model.safetensors").read() == b"weights"
+    assert not training_dir.exists()
     assert not (tmp_path / "run-summary.json").exists()
